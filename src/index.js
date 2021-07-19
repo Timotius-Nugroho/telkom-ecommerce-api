@@ -9,7 +9,7 @@ const bodyParser = require('body-parser')
 const routerNavigation = require('./routes')
 
 const app = express()
-const port = process.env.DB_PORT
+const port = process.env.PORT
 
 app.use(morgan('dev'))
 app.use(cors())
@@ -21,8 +21,7 @@ app.use(compression())
 app.use(bodyParser.urlencoded({ extended: false }))
 // parse application/json
 app.use(bodyParser.json())
-app.use('/backend3/api/v1', routerNavigation)
-app.use('/backend3/api', express.static('src/uploads'))
+app.use('/backend-ruangguru/api', routerNavigation)
 
 app.listen(port, () => {
   console.log(`Express app is listen on port ${port} !`)
