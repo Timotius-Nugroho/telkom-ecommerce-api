@@ -27,6 +27,7 @@ module.exports = {
 
       if (userInfo.packages.length > 0) {
         let prizeName = ''
+        const prizeList = []
         for (const pack of userInfo.packages) {
           if (pack.packageTag === 'englishacademy') {
             prizeName = 'Shoes'
@@ -37,7 +38,10 @@ module.exports = {
           } else {
             prizeName = 'Undefined'
           }
-          await addPrize({ name: prizeName, user_id: dataUser.id })
+          if (!prizeList.includes(prizeName)) {
+            await addPrize({ name: prizeName, user_id: dataUser.id })
+            prizeList.push(prizeName)
+          }
         }
       }
       const result = await addData(dataUser)
