@@ -15,11 +15,12 @@ module.exports = {
         ) {
           return helper.response(res, 403, error.message)
         } else {
+          req.decodeToken = result
           next()
         }
       })
     } else {
-      return helper.response(res, 403, 'Please login as Admin !')
+      return helper.response(res, 403, 'Please login !')
     }
   }
 }

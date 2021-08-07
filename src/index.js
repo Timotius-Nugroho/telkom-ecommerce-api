@@ -21,7 +21,8 @@ app.use(compression())
 app.use(bodyParser.urlencoded({ extended: false }))
 // parse application/json
 app.use(bodyParser.json())
-app.use('/backend-ruangguru/api', routerNavigation)
+app.use('/backend-telkom/api', routerNavigation)
+app.use('/backend-telkom/uploads', express.static('src/uploads'))
 
 app.listen(port, () => {
   console.log(`Express app is listen on port ${port} !`)

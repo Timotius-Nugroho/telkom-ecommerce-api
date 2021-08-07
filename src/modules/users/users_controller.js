@@ -1,51 +1,57 @@
 const helper = require('../../helpers/wrapper')
-const {
-  addData,
-  addPrize,
-  checkByCondition,
-  getUserInfo
-} = require('./users_model')
+const { getDataByCondition, addData } = require('./users_model')
+const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 
 module.exports = {
-  inputFrom: async (req, res) => {
+  register: async (req, res) => {
     try {
-      const dataUser = req.body
-      const isUserExist = await checkByCondition({ id: dataUser.id })
-      const userInfo = await getUserInfo(dataUser.id)
+      // console.log(req.body)
+      const isUserExist = await getDataByCondition({
+        user_email: req.body.user_email
+      })
+      if (isUserExist.length > 0) {
+        return helper.response(res, 400, 'Email Registered')
+      }
 
-      if (userInfo.status === 'error') {
+      const salt = bcrypt.genSaltSync(10)
+      const encryptPassword = bcrypt.hashSync(req.body.user_password, salt)
+      req.body.user_password = encryptPassword
+
+      const result = await addData(req.body)
+      delete result.user_password
+      return helper.response(res, 200, 'Succes add new user', result)
+    } catch (error) {
+      console.log(error)
+      return helper.response(res, 400, 'Bad Request', error)
+    }
+  },
+
+  login: async (req, res) => {
+    try {
+      const isUserExist = await getDataByCondition({
+        user_email: req.body.user_email
+      })
+      if (isUserExist.length === 0) {
         return helper.response(res, 404, 'User not found')
       }
-      if (isUserExist) {
-        return helper.response(res, 403, 'The user has entered data')
-      }
-      for (const field in dataUser) {
-        if (!dataUser[field]) {
-          return helper.response(res, 400, 'Incomplete form')
-        }
+
+      const checkPassword = bcrypt.compareSync(
+        req.body.user_password,
+        isUserExist[0].user_password
+      )
+      if (!checkPassword) {
+        return helper.response(res, 400, 'Wrong password')
       }
 
-      if (userInfo.packages.length > 0) {
-        let prizeName = ''
-        const prizeList = []
-        for (const pack of userInfo.packages) {
-          if (pack.packageTag === 'englishacademy') {
-            prizeName = 'Shoes'
-          } else if (pack.packageTag === 'skillacademy') {
-            prizeName = 'Bag'
-          } else if (pack.packageTag === 'ruangguru') {
-            prizeName = 'Pencils'
-          } else {
-            prizeName = 'Undefined'
-          }
-          if (!prizeList.includes(prizeName)) {
-            await addPrize({ name: prizeName, user_id: dataUser.id })
-            prizeList.push(prizeName)
-          }
+      const token = jwt.sign(
+        { id: isUserExist[0].user_id },
+        process.env.PRIVATE_KEY,
+        {
+          expiresIn: '24h'
         }
-      }
-      const result = await addData(dataUser)
-      return helper.response(res, 200, 'Succes input user data', result)
+      )
+      return helper.response(res, 200, 'Succes login', token)
     } catch (error) {
       return helper.response(res, 400, 'Bad Request', error)
     }
