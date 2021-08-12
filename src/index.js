@@ -25,5 +25,5 @@ app.use('/backend-telkom/api', routerNavigation)
 app.use('/backend-telkom/uploads', express.static('src/uploads'))
 
 app.listen(port, () => {
-  console.log(`Express app is listen on port ${port} !`)
+  console.log(`EExpress app is listen on port ${port} !`)
 })
